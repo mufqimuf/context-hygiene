@@ -1,10 +1,18 @@
 # context-hygiene 🧠🧹
 
+<p align="center">
+  <img src="assets/banner.png" alt="context-hygiene banner" width="820"/>
+</p>
+
 **Satu script Python (tanpa dependensi) yang mendeteksi sesi AI yang udah terlalu
 lama / terlalu penuh — biar agent kamu gak halu karena "kepala penuh".**
 
 Buat semua AI agent: **Hermes Agent, Claude Code, OpenCode, Codex CLI**, atau
 tool lain yang nyimpen sesi sebagai file/SQLite.
+
+> 📚 **Mau belajar / fork?** Baca [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) —
+> panduan membaca kode file-per-file, pelajaran desain, dan daftar ide
+> perbaikan buat kontributor. Kodenya sengaja kecil & bisa dibaca habis.
 
 ## Kenapa ini penting?
 
@@ -56,6 +64,42 @@ python3 context_hygiene.py --max-age-hours 24 --max-prompt-tokens 40000
 
 ## Setup otomatis
 
+**Cara termudah — installer interaktif:**
+
+```bash
+python3 install.py
+```
+
+Installer bakal nanya: tool mana yang dipakai, **mode reset** (notify/auto),
+kirim notif ke mana (Telegram / chat session / webhook), threshold, dan jadwal
+cron — lalu nulis wrapper + crontab sendiri. Aman dijalankan ulang kapan pun
+buat ganti setting.
+
+### Dua mode reset
+
+| | `notify` (recommended) | `auto` |
+|---|---|---|
+| Perilaku | kirim peringatan → **kamu** ketik `/new` | reset langsung tanpa tanya |
+| Notifikasi | Telegram / chat session / webhook (dipilih saat install) | tidak ada |
+| Keamanan | — | idle-guard 15 menit (gak reset saat kamu lagi ngetik), sesi di-*archive* bukan dihapus |
+| cocok buat | pengguna normal | server/headless yang gak dibaca manusia |
+
+Contoh manual dua mode:
+
+```bash
+# deteksi dulu
+python3 context_hygiene.py --json > warnings.json
+
+# MODE 1: notifikasi ke Telegram (butuh TELEGRAM_BOT_TOKEN di env)
+python3 reset_modes.py --mode notify --notify telegram:<chat_id> --warnings-file warnings.json
+
+# MODE 1b: ke chat/session yang lagi dipakai (stdout)
+python3 reset_modes.py --mode notify --notify session --warnings-file warnings.json
+
+# MODE 2: reset otomatis (idle-guard + archive, tanpa pemberitahuan)
+python3 reset_modes.py --mode auto --warnings-file warnings.json
+```
+
 ### Hermes Agent (cron bawaan)
 
 ```bash
@@ -101,6 +145,17 @@ IF exit code ≠ 0 → kirim pesan.
 
 - Python 3.9+ (stdlib only, zero pip install)
 - Baca akses ke home directory tool yang mau dicek
+
+## Struktur repo
+
+```
+context_hygiene.py      # deteksi & evaluasi sesi (semua tool)
+reset_modes.py          # aksi: notify (Telegram/session/webhook) atau auto-reset
+install.py              # wizard setup → wrapper + crontab otomatis
+skill-hermes/SKILL.md   # skill buat agent Hermes (aturan perilaku)
+docs/ARCHITECTURE.md    # 📚 panduan belajar kode + ide kontribusi
+assets/banner.png|.svg  # ilustrasi
+```
 
 ## Roadmap
 
