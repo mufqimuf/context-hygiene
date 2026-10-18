@@ -121,7 +121,7 @@ def check_hermes(home: Path | None = None) -> list[dict]:
                         "started_at": started or 0,
                         "last_active": time.time(),
                         "tokens": itok or 0,
-                        "detail": "active CLI session",
+                        "detail": f"active CLI session db={db_path}",
                     })
             except sqlite3.OperationalError:
                 pass
